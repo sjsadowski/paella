@@ -1,0 +1,3 @@
+# pyaauth
+
+Asynchronous Auth library

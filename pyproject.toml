@@ -1,0 +1,17 @@
+[tool.pdm]
+
+[project]
+name = "pyaauth"
+version = "0.1.0"
+description = "Asynchronous Auth library"
+authors = [
+    {name = "Stephen Sadowski", email = "stephen.sadowski@sjsadowski.com"},
+]
+dependencies = []
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-pep517>=1.0"]
+build-backend = "pdm.pep517.api"
