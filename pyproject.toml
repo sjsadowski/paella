@@ -13,7 +13,9 @@ description = "Asynchronous Auth library"
 authors = [
     {name = "Stephen Sadowski", email = "stephen.sadowski@sjsadowski.com"},
 ]
-dependencies = []
+dependencies = [
+    "pyjwt[crypto]>=2.8.0",
+]
 requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "MIT"}
