@@ -27,19 +27,19 @@ class Pyaauth:
         if self.authn_fn is None:
             raise NotImplementedError('No authentication function is set')
 
-        if asyncio.iscoroutinefunction(self.authn_fn):
+        if asyncio.isawaitable(self.authn_fn):
             await self.authn_fn(id, secret)
         else:
             self.authn_fn(id, secret)
 
-
-    async def authorize(self, jwt: str, *params) -> str | bool:
+    # Authorization
+    async def authorize(self, jwt: str, claim: str, value: str) -> str | bool:
         if self.authz_fn is None:
             raise NotImplementedError('No authorization function is set')
 
 
-        if asyncio.iscoroutinefunction(self.authz_fn):
-            await self.authn_fn(jwt, *params)
+        if asyncio.isawaitable(self.authz_fn):
+            await self.authn_fn(jwt, claim, value)
         else:
-            self.authn_fn(jwt, *params)
+            self.authn_fn(jwt, claim, value)
 
