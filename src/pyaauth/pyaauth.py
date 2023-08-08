@@ -63,12 +63,12 @@ class Pyaauth:
 
 
     # If authenticated, returns jwt or None
-    async def authenticate(self, id: str, secret: str) -> str | bool:
+    async def authenticate(self, id: str = '', secret: str = '') -> str | bool:
 
         # default: not authenticated
         authn: bool = False
 
-        if self.authn_fn is None:
+        if self._authn_fn is None:
             raise NotImplementedError('No authentication function is set')
 
         try:
