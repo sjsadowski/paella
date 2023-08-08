@@ -15,12 +15,12 @@ This assumes two things - first, that you are setting up a connection object of 
 For example: it is 100% acceptable to have a authorization function that lools like this:
 
 ```py
-async def authenticate() -> bool:
+async def authenticate(cxobj: Any, id: str, secret: str) -> bool:
     return True
 ```
 or
 ```py
-async def authenticate() -> bool:
+async def authenticate(cxobj: Any, id: str, secret: str) -> bool:
     return False
 ```
 
