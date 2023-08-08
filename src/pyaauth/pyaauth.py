@@ -15,6 +15,9 @@ class Pyaauth:
     def __init__(self, authn_fn=None, authz_fn=None, cxobj=None, privkey=None, pubkey=None) -> None:
         self.authn_fn = authn_fn
         self.authz_fn = authz_fn
+        self.privkey = privkey
+        self.pubkey = pubkey
+        self.cxobj = cxobj
 
 
     @property
