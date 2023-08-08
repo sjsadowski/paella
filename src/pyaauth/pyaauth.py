@@ -58,7 +58,7 @@ class Pyaauth:
         return self._cxobj
 
     @cxobj.setter
-    def privkey(self, cxobj: Any) -> None:
+    def cxobj(self, cxobj: Any) -> None:
         self._cxobj = cxobj
 
 
@@ -71,10 +71,13 @@ class Pyaauth:
         if self.authn_fn is None:
             raise NotImplementedError('No authentication function is set')
 
-        if asyncio.isawaitable(self.authn_fn):
-            authn = await self.authn_fn(id, secret)
-        else:
-            authn = self.authn_fn(id, secret)
+        try:
+            if asyncio.isawaitable(self.authn_fn):
+                authn = await self.authn_fn(id, secret)
+            else:
+                authn = self.authn_fn(id, secret)
+        except Exception as exc:
+            raise RuntimeWarning(f'While attempting to authenticate, an exception was raised: {exc}')
 
         if authn:
             pass
@@ -90,11 +93,12 @@ class Pyaauth:
         if self.authz_fn is None:
             raise NotImplementedError('No authorization function is set')
 
-
-        if asyncio.isawaitable(self.authz_fn):
-            await self.authn_fn(jwt, claim, value)
-        else:
-            self.authn_fn(jwt, claim, value)
-
+        try:
+            if asyncio.isawaitable(self.authz_fn):
+                await self.authn_fn(jwt, claim, value)
+            else:
+                self.authn_fn(jwt, claim, value)
+        except Exception as exc:
+            raise RuntimeWarning(f'While attempting to authorize, an exception was raised: {exc}')
 
         return authz
