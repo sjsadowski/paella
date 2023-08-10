@@ -3,11 +3,23 @@ import pytest
 import jwt
 from paella import Paella
 
+@pytest.fixture
+def sql3_sync_obj():
+    return True
+
+@pytest.fixture
+def sql3_async_obj():
+    return True
+
+@pytest.fixture
+def paella_auth():
+    return Paella()
+
+
 @pytest.mark.asyncio
-async def test_fail_no_authn_fn():
-    auth = Paella()
+async def test_fail_no_authn_fn(paella_auth):
     with pytest.raises(NotImplementedError):
-        await auth.authenticate()
+        await paella_auth.authenticate()
 
 
 def test_fail_jwt():
