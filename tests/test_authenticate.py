@@ -1,18 +1,20 @@
-import pytest
+from aiosqlite import connect as aconnect, Connection as AConnection
+from sqlite3 import connect, Connection
+from typing import Any, Callable
 
-import aiosqlite
-import sqlite3
+import pytest
 import jwt
 
 from paella import Paella
 
 @pytest.fixture
-def sql3_sync_obj():
-    return sqlite3.connect("./tests/db/test_users.db")
+def sql3_sync_db():
+    return connect("./tests/db/test_users.db")
 
-@pytest.fixture
-def sql3_async_obj():
-    return aiosqlite.connect("./tests/db/test_users.db")
+@pytest.fixture(autouse=True)
+async def sql3_async_db():
+    db: AConnection = await aconnect("./tests/db/test_users.db")
+    yield db
 
 @pytest.fixture
 def paella_auth():
@@ -26,8 +28,16 @@ async def test_fail_no_authn_fn(paella_auth):
 
 
 @pytest.mark.asyncio
-async def test_async_authenticate_basic(paella_auth, sql3_async_obj):
-    assert False
+async def test_async_authenticate_basic(paella_auth: Paella, sql3_async_db: AConnection):
+
+    def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
+        return True
+
+    paella_auth.cxobj = sql3_async_db
+    paella_auth.authn_fn = async_authn_fn
+
+    authn_value: bool = await paella_auth.authenticate()
+    assert authn_value == True
 
 # Providing clarity for the below test:
 # The Paella.authenticate() function is asynchronous
@@ -35,8 +45,17 @@ async def test_async_authenticate_basic(paella_auth, sql3_async_obj):
 # Just testing to make sure both work as expected, even
 # though the synchronous function will block.
 @pytest.mark.asyncio
-async def test_authenticate_basic(paella_auth, sql3_async_obj):
-    assert False
+async def test_authenticate_basic(paella_auth: Paella, sql3_sync_db: Connection):
+
+    def sync_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
+        return True
+
+    paella_auth.cxobj = sql3_sync_db
+    paella_auth.authn_fn = sync_authn_fn
+
+    authn_value: bool = await paella_auth.authenticate()
+    assert authn_value == True
+
 
 def test_fail_jwt():
     assert False
