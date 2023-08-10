@@ -161,3 +161,4 @@ cython_debug/
 
 #ignore local venv info from pdm
 .pdm-python
+.pdm-build

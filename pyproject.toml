@@ -1,7 +1,7 @@
 [project]
-name = "pyaauth"
-version = "0.1.0"
-description = "Simple. extensible Asynchronous Authnz library"
+name = "paella_auth"
+version = "0.1.0a"
+description = "Simple, extensible Asynchronous Authnz library"
 authors = [
     {name = "Stephen Sadowski", email = "stephen.sadowski@sjsadowski.com"},
 ]
@@ -13,8 +13,8 @@ readme = "README.md"
 license = {text = "MIT"}
 
 [build-system]
-requires = ["pdm-pep517>=1.0"]
-build-backend = "pdm.pep517.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -30,5 +30,6 @@ dev = [
     "pytest>=7.4.0",
     "bandit>=1.7.5",
     "pytest-asyncio>=0.21.1",
+    "aiosqlite>=0.19.0",
 ]
 
