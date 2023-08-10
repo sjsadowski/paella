@@ -2,7 +2,7 @@ import asyncio
 from typing import Callable, Any
 import jwt
 
-class Pyaauth:
+class Paella:
 
     __slots__ = [
         '_authn_fn',
@@ -63,19 +63,19 @@ class Pyaauth:
 
 
     # If authenticated, returns jwt or None
-    async def authenticate(self, id: str = '', secret: str = '') -> str | bool:
+    async def authenticate(self, id: str = '', secret: str = '') -> dict | bool:
 
         # default: not authenticated
-        authn: bool = False
+        authn: bool | dict = False
 
         if self._authn_fn is None:
             raise NotImplementedError('No authentication function is set')
 
         try:
             if asyncio.isawaitable(self.authn_fn):
-                authn = await self.authn_fn(id, secret)
+                authn = await self.authn_fn(self._cxobj, id, secret)
             else:
-                authn = self.authn_fn(id, secret)
+                authn = self.authn_fn(self._cxobj, id, secret)
         except Exception as exc:
             raise RuntimeWarning(f'While attempting to authenticate, an exception was raised: {exc}')
 
@@ -85,7 +85,7 @@ class Pyaauth:
         return authn
 
     # Authorization - note, this only validates a sig/checks a claim
-    async def authorize(self, jwt: str = '', claim: str = '', value: str = '') -> str | bool:
+    async def authorize(self, claimset: dict = {}) -> str | bool:
 
         # default: unauthorized
         authz: bool = False
@@ -95,9 +95,9 @@ class Pyaauth:
 
         try:
             if asyncio.isawaitable(self.authz_fn):
-                await self.authn_fn(jwt, claim, value)
+                await self._authz_fn(self._cxobj, claimset)
             else:
-                self.authn_fn(jwt, claim, value)
+                self._authz_fn(self._cxobj, claimset)
         except Exception as exc:
             raise RuntimeWarning(f'While attempting to authorize, an exception was raised: {exc}')
 
