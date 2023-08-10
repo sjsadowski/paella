@@ -1,1 +1,1 @@
-from .pyaauth import Pyaauth
+from .paella import Paella
