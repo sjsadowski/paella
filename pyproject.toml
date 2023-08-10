@@ -1,7 +1,7 @@
 [project]
 name = "pyaauth"
 version = "0.1.0"
-description = "Asynchronous Auth library"
+description = "Simple. extensible Asynchronous Authnz library"
 authors = [
     {name = "Stephen Sadowski", email = "stephen.sadowski@sjsadowski.com"},
 ]
