@@ -16,6 +16,18 @@ DO NOT REUSE THESE SECRETS FOR PRODUCTION
 ## testing
 I deliberately included a test keypair, please see the warning above.
 
+### test data
+In ```./tests/db/test_users.db``` there is minimal prepopulated data:
+
+```sql
+sqlite> .schema Users
+CREATE TABLE Users (id int primary key not null, email char(128) not null, password char(128) not null);
+sqlite> select * from Users;
+1|testuser@test.com|a_very_basic_password
+2|testuser2@test.com|65332c4349d159ab3d41b8e1a01db7d77928f1b8215fd345e19e5cfe016f468a
+```
+testuser2@test.com has a sha256 hash of the following string: ```salt+basic_password```
+
 ## Usage
 
 ### Creating auth object
