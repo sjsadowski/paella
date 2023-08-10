@@ -1,11 +1,11 @@
 import pytest
 
 import jwt
-from pyaauth import Pyaauth
+from paella import Paella
 
 @pytest.mark.asyncio
 async def test_fail_no_authn_fn():
-    auth = Pyaauth()
+    auth = Paella()
     with pytest.raises(NotImplementedError):
         await auth.authenticate()
 

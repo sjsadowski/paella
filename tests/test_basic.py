@@ -1,5 +1,5 @@
 import pytest
-from pyaauth import Pyaauth
+from paella import Paella
 
 def authn() -> bool:
     return True
@@ -9,20 +9,20 @@ def authz() -> bool:
     return True
 
 
-def test_create_pyaauth_no_authx_fns():
-    pya = Pyaauth()
-    assert isinstance(pya, Pyaauth)
+def test_create_Paella_no_authx_fns():
+    pyaa = Paella()
+    assert isinstance(pyaa, Paella)
 
-def test_create_pyaauth_no_authn_fn():
-    pya = Pyaauth(authz_fn=authz)
-    assert isinstance(pya, Pyaauth)
-
-
-def test_create_pyaauth_no_authz_fn():
-    pya = Pyaauth(authn_fn=authn)
-    assert isinstance(pya, Pyaauth)
+def test_create_Paella_no_authn_fn():
+    pyaa = Paella(authz_fn=authz)
+    assert isinstance(pyaa, Paella)
 
 
-def test_create_pyaauth():
-    pya = Pyaauth(authn_fn=authn, authz_fn=authz)
-    assert isinstance(pya, Pyaauth)
+def test_create_Paella_no_authz_fn():
+    pyaa = Paella(authn_fn=authn)
+    assert isinstance(pyaa, Paella)
+
+
+def test_create_Paella():
+    pyaa = Paella(authn_fn=authn, authz_fn=authz)
+    assert isinstance(pyaa, Paella)
