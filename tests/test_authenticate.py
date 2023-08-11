@@ -7,6 +7,30 @@ import jwt
 
 from paella import Paella
 
+
+
+def sync_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
+    cur = cxobj.cursor()
+    cur.execute("SELECT id FROM Users WHERE email=? and password=?", (id, secret))
+    res = cur.fetchone()
+    if res is not None:
+        return True
+    else:
+        return False
+
+
+
+async def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
+    cur = await cxobj.cursor()
+    await cur.execute("SELECT id FROM Users WHERE email=? and password=?", (id, secret))
+    res = await cur.fetchone()
+    if res is not None:
+        return True
+    else:
+        return False
+
+
+
 @pytest.fixture
 def sql3_sync_db():
     db: Connection = connect("./tests/db/test_users.db")
@@ -32,7 +56,7 @@ def privkey():
 
 @pytest.fixture
 def pubkey():
-    with open('./tests/keys/test_rsa_priv') as f:
+    with open('./tests/keys/test_rsa_pub') as f:
         pub = f.read()
     return pub
 
@@ -46,9 +70,6 @@ async def test_fail_no_authn_fn(paella_auth):
 @pytest.mark.asyncio
 async def test_async_authenticate_basic(paella_auth: Paella, sql3_async_db: AConnection):
 
-    def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
-        return True
-
     paella_auth.cxobj = sql3_async_db
     paella_auth.authn_fn = async_authn_fn
 
@@ -61,11 +82,9 @@ async def test_async_authenticate_basic(paella_auth: Paella, sql3_async_db: ACon
 # But for ease of use you can pass a standard (synchronous) function
 # Just testing to make sure both work as expected, even
 # though the synchronous function will block.
+
 @pytest.mark.asyncio
 async def test_authenticate_basic(paella_auth: Paella, sql3_sync_db: Connection):
-
-    def sync_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
-        return True
 
     paella_auth.cxobj = sql3_sync_db
     paella_auth.authn_fn = sync_authn_fn
@@ -73,6 +92,26 @@ async def test_authenticate_basic(paella_auth: Paella, sql3_sync_db: Connection)
     authn_value: bool = await paella_auth.authenticate()
 
     assert authn_value == True
+
+async def test_authenticate_basic(paella_auth: Paella, sql3_sync_db: Connection):
+
+    def sync_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
+        cur = cxobj.cursor()
+        cur.execute("SELECT id FROM Users WHERE email=? and password=?", (id, secret))
+        res = cur.fetchone()
+        if res is not None:
+            return True
+        else:
+            return False
+
+
+    paella_auth.cxobj = sql3_sync_db
+    paella_auth.authn_fn = sync_authn_fn
+
+    authn_value: bool = await paella_auth.authenticate()
+
+    assert authn_value == True
+
 
 
 def test_fail_jwt():
