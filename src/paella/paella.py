@@ -72,9 +72,7 @@ class Paella:
             raise NotImplementedError('No authentication function is set')
 
         try:
-
-
-            if asyncio.iscoroutine(self.authn_fn):
+            if asyncio.iscoroutinefunction(self.authn_fn):
                 authn = await self.authn_fn(self._cxobj, id, secret)
             else:
                 authn = self.authn_fn(self._cxobj, id, secret)
@@ -96,7 +94,7 @@ class Paella:
             raise NotImplementedError('No authorization function is set')
 
         try:
-            if asyncio.iscoroutine(self.authz_fn):
+            if asyncio.iscoroutinefunction(self.authz_fn):
                 await self._authz_fn(self._cxobj, claimset)
             else:
                 self._authz_fn(self._cxobj, claimset)
