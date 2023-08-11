@@ -93,6 +93,8 @@ class Paella:
     def cxobj(self, cxobj: Any) -> None:
         self._cxobj = cxobj
 
+    # TODO: Add static methods that are default authz/authn functions)
+
 
     # If authenticated, returns jwt or None
     async def authenticate(self, id: str = '', secret: str = '') -> dict | bool:
