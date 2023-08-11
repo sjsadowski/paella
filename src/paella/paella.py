@@ -23,8 +23,16 @@ class Paella:
     _cxobj: Any
 
     def __init__(self, authn_fn=None, authz_fn=None, cxobj=None, privkey=None, password=None, pubkey=None) -> None:
-        self.authn_fn = authn_fn
-        self.authz_fn = authz_fn
+        if authn_fn is None:
+            self.authn_fn = self.default_authn_fn
+        else:
+            self.authn_fn = authn_fn
+
+        if authz_fn is None:
+            self.authz_fn = self.default_authz_fn
+        else:
+            self.authz_fn = authz_fn
+
         self.privkey = privkey
         self.password = password
         self.pubkey = pubkey
@@ -93,8 +101,13 @@ class Paella:
     def cxobj(self, cxobj: Any) -> None:
         self._cxobj = cxobj
 
-    # TODO: Add static methods that are default authz/authn functions)
+    @staticmethod
+    async def default_authn_fn(cxobj, **kwargs) -> bool:
+        return True
 
+    @staticmethod
+    async def default_authz_fn(cxobj, **kwargs) -> bool:
+        return True
 
     # If authenticated, returns jwt or None
     async def authenticate(self, id: str = '', secret: str = '') -> dict | bool:
