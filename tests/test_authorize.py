@@ -65,9 +65,10 @@ def pubkey():
 
 
 @pytest.mark.asyncio
-async def test_fail_no_authn_fn(paella_auth):
+async def test_fail_no_authz_fn(paella_auth: Paella):
+    paella_auth.authz_fn = None
     with pytest.raises(NotImplementedError):
-        await paella_auth.authenticate()
+        await paella_auth.authorize()
 
 
 @pytest.mark.asyncio
@@ -101,6 +102,7 @@ async def test_async_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection,
 async def test_fail_jwt_decode_no_authz_fn(paella_auth: Paella, privkey: str, pubkey: str):
     paella_auth.privkey = privkey
     paella_auth.pubkey = pubkey
+    paella_auth.authz_fn = None
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
 
     with pytest.raises(NotImplementedError):

@@ -32,9 +32,6 @@ async def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
 def sync_authz_fn(cxobj, **kwargs) -> bool:
     return True
 
-async def async_authz_fn(cxobj, **kwargs) -> bool:
-    return True
-
 @pytest.fixture
 def sql3_sync_db():
     db: Connection = connect("./tests/db/test_users.db")
@@ -67,12 +64,13 @@ def pubkey():
 
 @pytest.mark.asyncio
 async def test_fail_no_authn_fn(paella_auth):
+    paella_auth.authn_fn = None
     with pytest.raises(NotImplementedError):
         await paella_auth.authenticate()
 
 
 @pytest.mark.asyncio
-async def test_async_authenticate_basic_fail(paella_auth: Paella, sql3_async_db: AConnection):
+async def test_async_authn_basic_ext_fail(paella_auth: Paella, sql3_async_db: AConnection):
 
     paella_auth.cxobj = sql3_async_db
     paella_auth.authn_fn = async_authn_fn
@@ -83,7 +81,7 @@ async def test_async_authenticate_basic_fail(paella_auth: Paella, sql3_async_db:
 
 
 @pytest.mark.asyncio
-async def test_async_authenticate_basic(paella_auth: Paella, sql3_async_db: AConnection):
+async def test_async_authn_ext_basic(paella_auth: Paella, sql3_async_db: AConnection):
 
     paella_auth.cxobj = sql3_async_db
     paella_auth.authn_fn = async_authn_fn
@@ -100,7 +98,7 @@ async def test_async_authenticate_basic(paella_auth: Paella, sql3_async_db: ACon
 # though the synchronous function will block.
 
 @pytest.mark.asyncio
-async def test_authenticate_basic_fail(paella_auth: Paella, sql3_sync_db: Connection):
+async def test_authn_basic_ext_fail(paella_auth: Paella, sql3_sync_db: Connection):
 
     paella_auth.cxobj = sql3_sync_db
     paella_auth.authn_fn = sync_authn_fn
@@ -111,7 +109,7 @@ async def test_authenticate_basic_fail(paella_auth: Paella, sql3_sync_db: Connec
 
 
 @pytest.mark.asyncio
-async def test_authenticate_basic(paella_auth: Paella, sql3_sync_db: Connection):
+async def test_authn_basic_ext(paella_auth: Paella, sql3_sync_db: Connection):
 
     paella_auth.cxobj = sql3_sync_db
     paella_auth.authn_fn = sync_authn_fn
