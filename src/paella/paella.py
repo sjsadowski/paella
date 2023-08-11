@@ -150,10 +150,7 @@ class Paella:
             raise NotImplementedError('No authentication function is set')
 
         try:
-            if asyncio.iscoroutinefunction(self.authn_fn):
-                authn = await self.authn_fn(self._cxobj, id, secret)
-            else:
-                authn = self.authn_fn(self._cxobj, id, secret)
+            authn = await self.authn_fn(self._cxobj, id, secret)
         except Exception as exc:
             raise RuntimeWarning(f'While attempting to authenticate, an exception was raised: {exc}')
 
@@ -172,10 +169,7 @@ class Paella:
             raise NotImplementedError('No authorization function is set')
 
         try:
-            if asyncio.iscoroutinefunction(self.authz_fn):
-                authz = await self._authz_fn(self._cxobj, **kwargs)
-            else:
-                authz = self._authz_fn(self._cxobj, **kwargs)
+            authz = await self._authz_fn(self._cxobj, **kwargs)
         except Exception as exc:
             raise RuntimeWarning(f'While attempting to authorize, an exception was raised: {exc}')
 

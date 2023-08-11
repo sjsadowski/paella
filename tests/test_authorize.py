@@ -8,16 +8,6 @@ import jwt
 from paella import Paella
 
 
-def sync_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
-    cur = cxobj.cursor()
-    cur.execute("SELECT id FROM Users WHERE email=? and password=?", (id, secret))
-    res = cur.fetchone()
-    if res is not None:
-        return True
-    else:
-        return False
-
-
 async def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
     cur = await cxobj.cursor()
     await cur.execute("SELECT id FROM Users WHERE email=? and password=?", (id, secret))
@@ -27,18 +17,9 @@ async def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
     else:
         return False
 
-
-def sync_authz_fn(cxobj, **kwargs) -> bool:
-    return True
-
 async def async_authz_fn(cxobj, **kwargs) -> bool:
     return True
 
-@pytest.fixture
-def sql3_sync_db():
-    db: Connection = connect("./tests/db/test_users.db")
-    yield db
-    db.close()
 
 @pytest.fixture(autouse=True)
 async def sql3_async_db():
@@ -78,15 +59,6 @@ async def test_fail_jwt_decode_no_pubkey(paella_auth: Paella, privkey: str):
 
     with pytest.raises(ValueError):
         jwt_dec = await paella_auth.jwt_authz(jwt_str)
-
-@pytest.mark.asyncio
-async def test_sync_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):
-    paella_auth.cxobj = sql3_async_db
-    paella_auth.pubkey = pubkey
-    paella_auth.authz_fn = sync_authz_fn
-    jwt_str = jwt.encode({'id': "testuser@test.com", 'secret': "a_very_basic_password"}, key=privkey, algorithm="RS256")
-    valid_token = await paella_auth.jwt_authz(jwt_str)
-    assert valid_token == True
 
 @pytest.mark.asyncio
 async def test_async_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):

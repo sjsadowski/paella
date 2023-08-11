@@ -9,16 +9,6 @@ from paella import Paella
 
 
 
-def sync_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
-    cur = cxobj.cursor()
-    cur.execute("SELECT id FROM Users WHERE email=? and password=?", (id, secret))
-    res = cur.fetchone()
-    if res is not None:
-        return True
-    else:
-        return False
-
-
 async def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
     cur = await cxobj.cursor()
     await cur.execute("SELECT id FROM Users WHERE email=? and password=?", (id, secret))
@@ -28,9 +18,6 @@ async def async_authn_fn(cxobj: Any, id: str, secret: str) -> bool:
     else:
         return False
 
-
-def sync_authz_fn(cxobj, **kwargs) -> bool:
-    return True
 
 @pytest.fixture
 def sql3_sync_db():
@@ -97,26 +84,6 @@ async def test_async_authn_ext_basic(paella_auth: Paella, sql3_async_db: AConnec
 # Just testing to make sure both work as expected, even
 # though the synchronous function will block.
 
-@pytest.mark.asyncio
-async def test_authn_basic_ext_fail(paella_auth: Paella, sql3_sync_db: Connection):
-
-    paella_auth.cxobj = sql3_sync_db
-    paella_auth.authn_fn = sync_authn_fn
-
-    authn_value: bool = await paella_auth.authenticate()
-
-    assert authn_value == False
-
-
-@pytest.mark.asyncio
-async def test_authn_basic_ext(paella_auth: Paella, sql3_sync_db: Connection):
-
-    paella_auth.cxobj = sql3_sync_db
-    paella_auth.authn_fn = sync_authn_fn
-
-    authn_value: bool = await paella_auth.authenticate("testuser@test.com","a_very_basic_password")
-
-    assert authn_value == True
 
 @pytest.mark.asyncio
 async def test_fail_noprivkey_jwt(paella_auth: Paella):
