@@ -124,7 +124,7 @@ class Paella:
             # authorization is also False
             for k,v in claimset.items():
                 if k in token_dict.keys():
-                    if claimset[k] != v:
+                    if token_dict[k] != v:
                         authz = False
                         break
                 else:
