@@ -23,6 +23,19 @@ async def sql3_async_db():
 def paella_auth():
     return Paella()
 
+@pytest.fixture
+def privkey():
+    with open('./tests/keys/test_rsa_priv') as f:
+        priv = f.read()
+
+    return priv
+
+@pytest.fixture
+def pubkey():
+    with open('./tests/keys/test_rsa_priv') as f:
+        pub = f.read()
+    return pub
+
 
 @pytest.mark.asyncio
 async def test_fail_no_authn_fn(paella_auth):
