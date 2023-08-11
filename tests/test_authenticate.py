@@ -17,7 +17,7 @@ def sql3_sync_db():
 async def sql3_async_db():
     db: AConnection = await aconnect("./tests/db/test_users.db")
     yield db
-    db.close()
+    await db.close()
 
 @pytest.fixture
 def paella_auth():
@@ -40,7 +40,6 @@ async def test_async_authenticate_basic(paella_auth: Paella, sql3_async_db: ACon
     paella_auth.authn_fn = async_authn_fn
 
     authn_value: bool = await paella_auth.authenticate()
-    paella_auth.cxobj.close()
 
     assert authn_value == True
 
@@ -59,7 +58,6 @@ async def test_authenticate_basic(paella_auth: Paella, sql3_sync_db: Connection)
     paella_auth.authn_fn = sync_authn_fn
 
     authn_value: bool = await paella_auth.authenticate()
-
 
     assert authn_value == True
 
