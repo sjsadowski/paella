@@ -1,5 +1,7 @@
 import asyncio
 from typing import Callable, Any
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 import jwt
 
 class Paella:
@@ -9,13 +11,22 @@ class Paella:
         '_authz_fn',
         '_pubkey',
         '_privkey',
+        '_password',
         '_cxobj'
     ]
 
-    def __init__(self, authn_fn=None, authz_fn=None, cxobj=None, privkey=None, pubkey=None) -> None:
+    _authn_fn: Callable
+    _authz_fn: Callable
+    _pubkey: str
+    _privkey: str
+    _password: bytes
+    _cxobj: Any
+
+    def __init__(self, authn_fn=None, authz_fn=None, cxobj=None, privkey=None, password=None, pubkey=None) -> None:
         self.authn_fn = authn_fn
         self.authz_fn = authz_fn
         self.privkey = privkey
+        self.password = password
         self.pubkey = pubkey
         self.cxobj = cxobj
 
@@ -50,7 +61,28 @@ class Paella:
 
     @privkey.setter
     def privkey(self, privkey: str | None) -> None:
-        self._privkey = privkey
+        private_key = privkey
+        if privkey is not None:
+            pem_bytes = privkey.encode()
+
+            private_key = serialization.load_pem_private_key(
+                pem_bytes, password=self._password, backend=default_backend(),
+            )
+        self._privkey = private_key
+
+
+    @property
+    def password(self) -> str | None:
+        return self._password
+
+    @password.setter
+    def password(self, password: str | None) -> None:
+
+        if password is not None:
+            self._password = password.encode()
+        else:
+            self._password = password
+
 
 
     @property
