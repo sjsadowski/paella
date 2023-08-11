@@ -78,9 +78,17 @@ async def test_fail_jwt_decode_no_pubkey(paella_auth: Paella, privkey: str):
     with pytest.raises(ValueError):
         jwt_dec = await paella_auth.jwt_authz(jwt_str)
 
+@pytest.mark.asyncio
+async def test_sync_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):
+    paella_auth.cxobj = sql3_async_db
+    paella_auth.pubkey = pubkey
+    paella_auth.authz_fn = sync_authz_fn
+    jwt_str = jwt.encode({'id': "testuser@test.com", 'secret': "a_very_basic_password"}, key=privkey, algorithm="RS256")
+    valid_token = await paella_auth.jwt_authz(jwt_str)
+    assert valid_token == True
 
 @pytest.mark.asyncio
-async def test_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):
+async def test_async_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):
     paella_auth.cxobj = sql3_async_db
     paella_auth.pubkey = pubkey
     paella_auth.authz_fn = async_authz_fn
@@ -98,14 +106,32 @@ async def test_fail_jwt_decode_no_authz_fn(paella_auth: Paella, privkey: str, pu
     with pytest.raises(NotImplementedError):
         jwt_dec = await paella_auth.jwt_authz(jwt_str)
 
+@pytest.mark.asyncio
+async def test_fail_jwt_bad_encoding(paella_auth: Paella, privkey: str, pubkey: str):
+    paella_auth.privkey = privkey
+    paella_auth.pubkey = pubkey
+    jwt_str = jwt.encode({'id': "testuser@test.com", 'secret': "a_very_basic_password"}, key="failing_secret")
+    with pytest.raises(jwt.exceptions.InvalidAlgorithmError):
+        jwt_dec = await paella_auth.jwt_authz(jwt_str)
 
-def test_jwt_bad():
+
+# The below uses a default authz function to verify a claim exists
+@pytest.mark.asyncio
+async def test_jwt_claim_missing(paella_auth: Paella, privkey: str, pubkey: str):
+    paella_auth.privkey = privkey
+    paella_auth.pubkey = pubkey
+    assert False
+
+# The below uses a custom authz function to verify claims
+@pytest.mark.asyncio
+async def test_jwt_claim_mismatch(paella_auth: Paella, privkey: str, pubkey: str):
+    paella_auth.privkey = privkey
+    paella_auth.pubkey = pubkey
     assert False
 
 
-def test_jwt_claim_fail():
-    assert False
-
-
-def test_jwt_claim():
+@pytest.mark.asyncio
+async def test_jwt_claim_match(paella_auth: Paella, privkey: str, pubkey: str):
+    paella_auth.privkey = privkey
+    paella_auth.pubkey = pubkey
     assert False
