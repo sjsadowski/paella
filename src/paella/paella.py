@@ -85,7 +85,7 @@ class Paella:
         return authn
 
     # Authorization - note, this only validates a sig/checks a claim
-    async def authorize(self, claimset: dict = {}) -> str | bool:
+    async def authorize(self, **kwargs) -> str | bool:
 
         # default: unauthorized
         authz: bool = False
@@ -95,10 +95,27 @@ class Paella:
 
         try:
             if asyncio.iscoroutinefunction(self.authz_fn):
-                await self._authz_fn(self._cxobj, claimset)
+                authz = await self._authz_fn(self._cxobj, **kwargs)
             else:
-                self._authz_fn(self._cxobj, claimset)
+                authz = self._authz_fn(self._cxobj, **kwargs)
         except Exception as exc:
             raise RuntimeWarning(f'While attempting to authorize, an exception was raised: {exc}')
+
+        return authz
+
+    async def jwt_authn(self, id: str = '', secret: str = '') -> str:
+        if self.privkey is None:
+            raise ValueError("No private key set for encoding")
+
+        return jwt.encode({'test': 'testdata'}, key=self.privkey, algorithm="RS256")
+
+    # if there's no claimset, will return as valid if the token is valid
+    async def jwt_authz(self, token: str = '', claimset: dict | None = None) -> bool:
+        if self.pubkey is None:
+            raise ValueError("No private key set for encoding")
+
+        token_dict: str = jwt.decode(token, self.pubkey, algorithms=["RS256"])
+
+        authz = await self.authorize(token_dict=token_dict, claimset=claimset)
 
         return authz
