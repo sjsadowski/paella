@@ -91,8 +91,6 @@ class Paella:
         else:
             self._password = password
 
-
-
     @property
     def cxobj(self) -> Any:
         return self._cxobj
@@ -102,12 +100,45 @@ class Paella:
         self._cxobj = cxobj
 
     @staticmethod
-    async def default_authn_fn(cxobj, **kwargs) -> bool:
-        return True
+    async def default_authn_fn(cxobj, *args, **kwargs) -> bool:
+
+        # defaults to not authenticated if we pass no arguments to it
+        authn: dict | bool = False
+        if len(kwargs) > 0:
+            authn = kwargs
+
+        return authn
 
     @staticmethod
-    async def default_authz_fn(cxobj, **kwargs) -> bool:
-        return True
+    async def default_authz_fn(cxobj, *args, **kwargs) -> bool:
+        authz: bool = True
+
+        # if we have a token_dict and a claimset, do comparison
+        if 'token_dict' in kwargs.keys() and 'claimset' in kwargs.keys():
+            token_dict = kwargs['token_dict']
+            claimset = kwargs['claimset']
+
+            # iterate through the claimset to make sure the key is present
+            # if the key is not present, the authorization is False
+            # if the key is present, but the value doesn't match, the
+            # authorization is also False
+            for k,v in claimset.items():
+                if k in token_dict.keys():
+                    if claimset[k] != v:
+                        authz = False
+                        break
+                else:
+                    authz = False
+                    break
+
+        # if we have a token_dict but no claimset, assume authorized
+        elif 'token_dict' in kwargs:
+            authz = True
+
+        else:
+            authz = False
+
+        return authz
 
     # If authenticated, returns jwt or None
     async def authenticate(self, id: str = '', secret: str = '') -> dict | bool:
@@ -150,11 +181,21 @@ class Paella:
 
         return authz
 
+    # If the authn_fn returns a boolean, encodes the id/secret and returns that in the jwt
+    # Otherwise, if it is a dict, encodes the dict values.
     async def jwt_authn(self, id: str = '', secret: str = '') -> str:
         if self.privkey is None:
             raise ValueError("No private key set for encoding")
 
-        return jwt.encode({'test': 'testdata'}, key=self.privkey, algorithm="RS256")
+        authn: dict | bool = await self.authenticate(id, secret)
+        token: dict = {}
+
+        if isinstance(authn, dict):
+            token = authn
+        else:
+            token = {'id': id, 'secret': secret}
+
+        return jwt.encode(token, key=self.privkey, algorithm="RS256")
 
     # if there's no claimset, will return as valid if the token is valid
     async def jwt_authz(self, token: str = '', claimset: dict | None = None) -> bool:
