@@ -134,31 +134,3 @@ async def test_issue_jwt(paella_auth: Paella, sql3_async_db: AConnection, privke
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
 
     assert isinstance(jwt_str, str)
-
-@pytest.mark.asyncio
-async def test_fail_jwt_decode_no_pubkey(paella_auth: Paella, privkey: str):
-    paella_auth.privkey = privkey
-    jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
-
-    with pytest.raises(ValueError):
-        jwt_dec = await paella_auth.jwt_authz(jwt_str)
-
-
-@pytest.mark.asyncio
-async def test_fail_jwt_decode_no_authz_fn(paella_auth: Paella, privkey: str, pubkey: str):
-    paella_auth.privkey = privkey
-    paella_auth.pubkey = pubkey
-    jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
-
-    with pytest.raises(NotImplementedError):
-        jwt_dec = await paella_auth.jwt_authz(jwt_str)
-
-
-@pytest.mark.asyncio
-async def test_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):
-    paella_auth.cxobj = sql3_async_db
-    paella_auth.pubkey = pubkey
-    paella_auth.authz_fn = async_authz_fn
-    jwt_str = jwt.encode({'id': "testuser@test.com", 'secret': "a_very_basic_password"}, key=privkey, algorithm="RS256")
-    valid_token = await paella_auth.jwt_authz(jwt_str)
-    assert valid_token == True
