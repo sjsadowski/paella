@@ -65,7 +65,7 @@ The authorization function takes in a dict and returns a boolean.
 The authorization function itself must have a function signature that matches the below:
 
 ```py
-async def authn(connection: Any, claimset: dict) -> bool:
+async def authz(connection: Any, *args, **kwargs) -> bool:
 ```
 
 ### Caveats
