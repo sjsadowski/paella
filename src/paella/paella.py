@@ -33,8 +33,8 @@ class Paella:
         else:
             self.authz_fn = authz_fn
 
-        self.privkey = privkey
         self.password = password
+        self.privkey = privkey
         self.pubkey = pubkey
         self.cxobj = cxobj
 
