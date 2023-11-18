@@ -1,4 +1,6 @@
 import asyncio
+import functools
+
 from typing import Callable, Any
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
@@ -191,13 +193,36 @@ class Paella:
 
         return jwt.encode(token, key=self.privkey, algorithm="RS256")
 
+
+    # get the dict from the token
+    async def decode(self, token: str | None = None) -> dict:
+        if token is None:
+            raise ValueError("No token available to decode")
+
+        if self.pubkey is None:
+            raise ValueError("No public key set for decoding")
+
+        loop = asyncio.get_running_loop()
+
+        decoded_token = await loop.run_in_executor(
+                    None,
+                    functools.partial(
+                        jwt.decode, token, self.pubkey, algorithms=["RS256"]
+                        )
+                    )
+
+        return decoded_token
+
+
+
     # if there's no claimset, will return as valid if the token is valid
     async def jwt_authz(self, token: str = '', claimset: dict | None = None) -> bool:
         if self.pubkey is None:
-            raise ValueError("No private key set for encoding")
+            raise ValueError("No public key set for decoding")
 
-        token_dict: str = jwt.decode(token, self.pubkey, algorithms=["RS256"])
+        token_dict: dict = await self.decode(token)
 
         authz = await self.authorize(token_dict=token_dict, claimset=claimset)
 
         return authz
+
