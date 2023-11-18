@@ -1,9 +1,9 @@
 from aiosqlite import connect as aconnect, Connection as AConnection
 from sqlite3 import connect, Connection
-from typing import Any, Callable
+from typing import Any
 
 import pytest
-import jwt
+
 
 from paella import Paella
 
@@ -64,7 +64,7 @@ async def test_async_authn_basic_ext_fail(paella_auth: Paella, sql3_async_db: AC
 
     authn_value: bool = await paella_auth.authenticate()
 
-    assert authn_value == False
+    assert authn_value is False
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_async_authn_ext_basic(paella_auth: Paella, sql3_async_db: AConnec
 
     authn_value: bool = await paella_auth.authenticate("testuser@test.com","a_very_basic_password")
 
-    assert authn_value == True
+    assert authn_value is True
 
 
 # Providing clarity for the below two tests:
@@ -99,3 +99,15 @@ async def test_issue_jwt(paella_auth: Paella, sql3_async_db: AConnection, privke
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
 
     assert isinstance(jwt_str, str)
+
+@pytest.mark.asyncio
+async def test_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):
+
+    paella_auth.cxobj = sql3_async_db
+    paella_auth.privkey = privkey
+    paella_auth.pubkey = pubkey
+
+    jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
+
+    decoded_token = await paella_auth.decode(jwt_str)
+    assert isinstance(decoded_token, dict)

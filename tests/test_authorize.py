@@ -1,6 +1,5 @@
 from aiosqlite import connect as aconnect, Connection as AConnection
-from sqlite3 import connect, Connection
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 import jwt
@@ -58,7 +57,7 @@ async def test_fail_jwt_decode_no_pubkey(paella_auth: Paella, privkey: str):
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
 
     with pytest.raises(ValueError):
-        jwt_dec = await paella_auth.jwt_authz(jwt_str)
+        await paella_auth.jwt_authz(jwt_str)
 
 @pytest.mark.asyncio
 async def test_async_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection, privkey: str, pubkey: str):
@@ -67,7 +66,7 @@ async def test_async_jwt_decode(paella_auth: Paella, sql3_async_db: AConnection,
     paella_auth.authz_fn = async_authz_fn
     jwt_str = jwt.encode({'id': "testuser@test.com", 'secret': "a_very_basic_password"}, key=privkey, algorithm="RS256")
     valid_token = await paella_auth.jwt_authz(jwt_str)
-    assert valid_token == True
+    assert valid_token is True
 
 
 @pytest.mark.asyncio
@@ -78,7 +77,7 @@ async def test_fail_jwt_decode_no_authz_fn(paella_auth: Paella, privkey: str, pu
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
 
     with pytest.raises(NotImplementedError):
-        jwt_dec = await paella_auth.jwt_authz(jwt_str)
+        await paella_auth.jwt_authz(jwt_str)
 
 @pytest.mark.asyncio
 async def test_fail_jwt_bad_encoding(paella_auth: Paella, privkey: str, pubkey: str):
@@ -86,7 +85,7 @@ async def test_fail_jwt_bad_encoding(paella_auth: Paella, privkey: str, pubkey: 
     paella_auth.pubkey = pubkey
     jwt_str = jwt.encode({'id': "testuser@test.com", 'secret': "a_very_basic_password"}, key="failing_secret")
     with pytest.raises(jwt.exceptions.InvalidAlgorithmError):
-        jwt_dec = await paella_auth.jwt_authz(jwt_str)
+        await paella_auth.jwt_authz(jwt_str)
 
 
 # The below uses a default authz function to verify a claim exists
@@ -96,7 +95,7 @@ async def test_jwt_claim_missing_default(paella_auth: Paella, privkey: str, pubk
     paella_auth.pubkey = pubkey
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
     authz = await paella_auth.jwt_authz(jwt_str,{'admin': True})
-    assert authz == False
+    assert authz is False
 
 # The below uses a custom authz function to verify claims
 @pytest.mark.asyncio
@@ -105,7 +104,7 @@ async def test_jwt_claim_mismatch_default(paella_auth: Paella, privkey: str, pub
     paella_auth.pubkey = pubkey
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
     authz = await paella_auth.jwt_authz(jwt_str,{'id': 'otheruser@test.com'})
-    assert authz == False
+    assert authz is False
 
 
 @pytest.mark.asyncio
@@ -114,4 +113,4 @@ async def test_jwt_claim_match_default(paella_auth: Paella, privkey: str, pubkey
     paella_auth.pubkey = pubkey
     jwt_str = await paella_auth.jwt_authn("testuser@test.com","a_very_basic_password")
     authz = await paella_auth.jwt_authz(jwt_str,{'id': 'testuser@test.com'})
-    assert authz == True
+    assert authz is True
