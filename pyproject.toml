@@ -1,6 +1,6 @@
 [project]
 name = "paella_auth"
-version = "0.4.1"
+version = "0.5.0"
 description = "Simple, extensible Asynchronous Authnz library"
 authors = [
     {name = "Stephen Sadowski", email = "stephen.sadowski@sjsadowski.com"},
